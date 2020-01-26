@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace BankApp
 {
     static class Bank
     {
+        private static List<Account> accounts = new List<Account>();
+
         /// <summary>
         /// Creates an account in the bank
         /// </summary>
@@ -33,7 +36,13 @@ namespace BankApp
                 account.Deposit(initialDeposit);
             }
 
+            accounts.Add(account);
             return account;
+        }
+
+        public static void Deposit(int accountNumber, decimal amount)
+        {
+            var account = accounts.Where(a => a.AccountNumber == accountNumber);
         }
     }
 }
