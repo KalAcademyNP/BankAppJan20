@@ -48,8 +48,7 @@ namespace BankApp
             var account = accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
             if (account == null)
             {
-                //Exception handling here
-                return;
+                throw new ArgumentException("Invalid account number! Try again.");
             }
 
             account.Deposit(amount);
@@ -57,13 +56,18 @@ namespace BankApp
 
         }
 
+        /// <summary>
+        /// Withdraw money from your account
+        /// </summary>
+        /// <param name="accountNumber">Account number</param>
+        /// <param name="amount">Amount to withdraw</param>
+        /// <exception cref="ArgumentException" />
         public static void Withdraw(int accountNumber, decimal amount)
         {
             var account = accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
             if (account == null)
             {
-                //Exception handling here
-                return;
+                throw new ArgumentException("Invalid account number! Try again.");
             }
 
             account.Withdraw(amount);
