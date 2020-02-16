@@ -7,9 +7,7 @@ namespace BankApp
 {
     static class Bank
     {
-        private static List<Account> accounts = new List<Account>();
-        private static List<Transaction> transactions = new List<Transaction>();
-
+        private static BankContext db = new BankContext();
         /// <summary>
         /// Creates an account in the bank
         /// </summary>
@@ -32,20 +30,22 @@ namespace BankApp
                 AccountType = accountType
             };
 
+
+            db.Accounts.Add(account);
+            db.SaveChanges();
             if (initialDeposit > 0)
             {
                 account.Deposit(initialDeposit);
-                createTransaction(initialDeposit, account.AccountNumber, 
+                db.SaveChanges();
+                createTransaction(initialDeposit, account.AccountNumber,
                     TypeOfTransaction.Credit, "Initial Deposit");
             }
-
-            accounts.Add(account);
             return account;
         }
 
         public static void Deposit(int accountNumber, decimal amount)
         {
-            var account = accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
+            var account = db.Accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
             if (account == null)
             {
                 throw new ArgumentException("Invalid account number! Try again.");
@@ -53,7 +53,7 @@ namespace BankApp
 
             account.Deposit(amount);
             createTransaction(amount, accountNumber, TypeOfTransaction.Credit, "Bank Deposit");
-
+            db.SaveChanges();
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace BankApp
         /// <exception cref="ArgumentException" />
         public static void Withdraw(int accountNumber, decimal amount)
         {
-            var account = accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
+            var account = db.Accounts.SingleOrDefault(a => a.AccountNumber == accountNumber);
             if (account == null)
             {
                 throw new ArgumentException("Invalid account number! Try again.");
@@ -72,19 +72,19 @@ namespace BankApp
 
             account.Withdraw(amount);
             createTransaction(amount, accountNumber, TypeOfTransaction.Debit, "Bank Withdrawal");
-
+            db.SaveChanges();
         }
 
         public static IEnumerable<Account> GetAllAccountsByEmailAddress(
             string emailAddress)
         {
-            return accounts.Where(a => a.EmailAddress == emailAddress);
+            return db.Accounts.Where(a => a.EmailAddress == emailAddress);
         }
 
         public static IEnumerable<Transaction> GetAllTransactionsByAccountNumber(
             int accountNumber)
         {
-            return transactions.Where(t => t.AccountNumber == accountNumber)
+            return db.Transactions.Where(t => t.AccountNumber == accountNumber)
                 .OrderByDescending(t => t.TransactionDate);
         }
 
@@ -100,7 +100,8 @@ namespace BankApp
                 AccountNumber = accountNumber,
                 TransactionType = transactionType
             };
-            transactions.Add(transaction);
+            db.Transactions.Add(transaction);
+            db.SaveChanges();
         }
     }
 }
