@@ -29,7 +29,7 @@ namespace BankUI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<BankContext>(options =>
-                options.UseSqlServer(@"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=BankDbJan20;Integrated Security=True;Connect Timeout=30;"));
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
