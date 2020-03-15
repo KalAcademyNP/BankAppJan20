@@ -8,17 +8,33 @@ using Microsoft.EntityFrameworkCore;
 using BankApp;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using NToastNotify;
 
 namespace BankUI.Controllers
 {
     [Authorize]
     public class AccountsController : Controller
     {
+        private readonly IToastNotification _toastNotification;
+        public string Username { get; set; }
 
+        public AccountsController()
+        {
+
+        }
+        public AccountsController(IToastNotification toastNotification)
+        {
+            _toastNotification = toastNotification;
+        }
         // GET: Accounts
         public IActionResult Index()
         {
-            return View(Bank.GetAllAccountsByEmailAddress(HttpContext.User.Identity.Name));
+            if (HttpContext != null && !string.IsNullOrEmpty(
+                HttpContext.User.Identity.Name))
+            {
+                Username = HttpContext.User.Identity.Name;
+            }
+            return View(Bank.GetAllAccountsByEmailAddress(Username));
         }
 
         // GET: Accounts/Details/5
@@ -56,6 +72,7 @@ namespace BankUI.Controllers
             if (ModelState.IsValid)
             {
                 Bank.CreateAccount(account.AccountName, account.EmailAddress, account.AccountType);
+                _toastNotification.AddSuccessToastMessage("account created!");
                 return RedirectToAction(nameof(Index));
             }
             return View(account);
@@ -109,10 +126,20 @@ namespace BankUI.Controllers
         public IActionResult Deposit(IFormCollection controls)
         {
             var accountNumber = Convert.ToInt32(controls["AccountNumber"]);
-            var amount = Convert.ToDecimal(controls["amount"]);
-            Bank.Deposit(accountNumber, amount);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                var amount = Convert.ToDecimal(controls["amount"]);
+                Bank.Deposit(accountNumber, amount);
+                return RedirectToAction(nameof(Index));
+            }
+            catch(FormatException)
+            {
+                _toastNotification.AddErrorToastMessage("Deposit not completed!");
+                ViewBag.ErrorMessage = "Amount is invalid!";
+                var account = Bank.GetAccountByAccountNumber(accountNumber);
+                return View(account);
 
+            }
         }
 
         public IActionResult Withdraw(int? id)
